@@ -1,0 +1,1 @@
+var c=require("crypto");var s=c.randomBytes(32).toString("hex");var fs=require("fs");fs.writeFileSync(".env","DATABASE_URL=\"file:./prisma/prod.db\"\nJWT_SECRET=\""+s+"\"\nNODE_ENV=\"production\"\nPORT=3000\n");console.log("ENV created. JWT: "+s.substring(0,8)+"...");

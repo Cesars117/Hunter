@@ -27,6 +27,28 @@ async function main() {
     },
   });
 
+  // Sacket Prestige
+  const company3 = await prisma.company.upsert({
+    where: { id: 'comp-003' },
+    update: {},
+    create: {
+      id: 'comp-003',
+      name: 'Sacket Prestige',
+      slug: 'sacket-prestige',
+    },
+  });
+
+  // CDS Solutions (system company for super admin)
+  const companySys = await prisma.company.upsert({
+    where: { id: 'comp-system' },
+    update: {},
+    create: {
+      id: 'comp-system',
+      name: 'CDS Solutions',
+      slug: 'cds-solutions',
+    },
+  });
+
   // ─── USERS ─────────────────────────────────────────
   const hashedPassword = await bcrypt.hash('admin123', 12);
 
@@ -53,6 +75,34 @@ async function main() {
       password: hashedPassword,
       name: 'Pedro Rodríguez',
       role: 'ADMIN',
+    },
+  });
+
+  // Sacket Prestige admin
+  await prisma.user.upsert({
+    where: { id: 'user-003' },
+    update: {},
+    create: {
+      id: 'user-003',
+      companyId: company3.id,
+      email: 'admin@sacket.com',
+      password: hashedPassword,
+      name: 'Sacket Admin',
+      role: 'ADMIN',
+    },
+  });
+
+  // SUPER ADMIN - Master account
+  await prisma.user.upsert({
+    where: { id: 'user-super' },
+    update: {},
+    create: {
+      id: 'user-super',
+      companyId: companySys.id,
+      email: 'admin@cdsrsolutions.com',
+      password: hashedPassword,
+      name: 'Super Admin',
+      role: 'SUPER_ADMIN',
     },
   });
 
@@ -88,6 +138,35 @@ async function main() {
       email: 'info@rodriguez.com',
       taxRate: 11.5,
       laborRate: 75.0,
+    },
+  });
+
+  // Sacket Prestige settings
+  await prisma.shopSettings.upsert({
+    where: { companyId: company3.id },
+    update: {},
+    create: {
+      companyId: company3.id,
+      shopName: 'Sacket Prestige',
+      address: '100 Prestige Blvd',
+      city: 'San Juan',
+      state: 'PR',
+      zipCode: '00907',
+      phone: '(787) 555-0300',
+      email: 'info@sacket.com',
+      taxRate: 11.5,
+      laborRate: 95.0,
+    },
+  });
+
+  // CDS Solutions settings
+  await prisma.shopSettings.upsert({
+    where: { companyId: companySys.id },
+    update: {},
+    create: {
+      companyId: companySys.id,
+      shopName: 'CDS Solutions',
+      email: 'admin@cdsrsolutions.com',
     },
   });
 
@@ -437,9 +516,12 @@ async function main() {
   });
 
   console.log('✅ Seed completed successfully!');
-  console.log('   - 2 Empresas (AutoFix PR, Taller Rodríguez)');
-  console.log('   - 2 Usuarios (admin@autofix.com / admin@rodriguez.com)');
-  console.log('   - Contraseña: admin123');
+  console.log('   - 4 Empresas (AutoFix PR, Taller Rodríguez, Sacket Prestige, CDS Solutions)');
+  console.log('   - 4 Usuarios:');
+  console.log('     admin@autofix.com / admin123 (AutoFix PR - ADMIN)');
+  console.log('     admin@rodriguez.com / admin123 (Taller Rodríguez - ADMIN)');
+  console.log('     admin@sacket.com / admin123 (Sacket Prestige - ADMIN)');
+  console.log('     admin@cdsrsolutions.com / admin123 (CDS Solutions - SUPER_ADMIN)');
   console.log('   - 3 Clientes (empresa AutoFix)');
   console.log('   - 3 Vehículos');
   console.log('   - 3 Estimados con líneas');

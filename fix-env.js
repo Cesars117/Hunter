@@ -1,0 +1,1 @@
+var c=require("crypto"),f=require("fs");var j=c.randomBytes(32).toString("hex");f.writeFileSync(".env","DATABASE_URL=\"file:./prisma/prod.db\"\nJWT_SECRET=\""+j+"\"\nNODE_ENV=\"production\"\nPORT=3000\n");console.log("ENV OK: "+j.substring(0,8)+"...");

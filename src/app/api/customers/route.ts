@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getCompanyId } from '@/lib/api-auth';
+import { getCompanyId, getCompanyFilter } from '@/lib/api-auth';
 
 // GET /api/customers - List all customers for the company
 export async function GET(request: NextRequest) {
   try {
-    const companyId = getCompanyId(request);
+    const companyFilter = getCompanyFilter(request);
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
 
     const customers = await prisma.customer.findMany({
       where: {
-        companyId,
+        ...(companyFilter ? { companyId: companyFilter } : {}),
         ...(search
           ? {
               OR: [
@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
           : {}),
       },
       include: {
+        company: { select: { name: true } },
         _count: {
           select: { vehicles: true, estimates: true },
         },

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import {
   LayoutDashboard,
   Users,
@@ -11,6 +12,7 @@ import {
   Settings,
   ClipboardList,
   TrendingUp,
+  Building2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -24,8 +26,25 @@ const navigation = [
   { name: 'Configuración', href: '/configuracion', icon: Settings },
 ];
 
+const adminNavigation = [
+  { name: 'Empresas', href: '/admin/empresas', icon: Building2 },
+];
+
 export default function Sidebar() {
   const pathname = usePathname();
+  const [role, setRole] = useState<string>('');
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.user?.role) setRole(data.user.role);
+      })
+      .catch(() => {});
+  }, []);
+
+  const isSuperAdmin = role === 'SUPER_ADMIN';
+  const allNav = isSuperAdmin ? [...navigation, ...adminNavigation] : navigation;
 
   return (
     <aside className="no-print flex w-64 flex-col border-r border-gray-200 bg-white">
@@ -44,7 +63,7 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 px-3 py-4">
-        {navigation.map((item) => {
+        {allNav.map((item) => {
           const isActive =
             item.href === '/'
               ? pathname === '/'

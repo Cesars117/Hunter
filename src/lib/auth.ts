@@ -8,6 +8,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'hunter-secret-key-change-in-produc
 const TOKEN_NAME = 'hunter-token';
 const TOKEN_EXPIRY = '7d';
 
+// Roles: SUPER_ADMIN can see/edit ALL companies. ADMIN/MANAGER/TECH are tenant-scoped.
+export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'TECH';
+
 export interface JWTPayload {
   userId: string;
   companyId: string;
@@ -15,6 +18,10 @@ export interface JWTPayload {
   name: string;
   role: string;
   companyName: string;
+}
+
+export function isSuperAdmin(role: string): boolean {
+  return role === 'SUPER_ADMIN';
 }
 
 export async function hashPassword(password: string): Promise<string> {

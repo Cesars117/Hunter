@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateEstimateNumber } from '@/lib/utils';
-import { getCompanyId } from '@/lib/api-auth';
+import { getCompanyId, getCompanyFilter } from '@/lib/api-auth';
 
 // GET /api/estimates
 export async function GET(request: NextRequest) {
   try {
-    const companyId = getCompanyId(request);
+    const companyFilter = getCompanyFilter(request);
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const customerId = searchParams.get('customerId');
     const vehicleId = searchParams.get('vehicleId');
 
-    const where: any = { companyId };
+    const where: any = companyFilter ? { companyId: companyFilter } : {};
     if (status) {
       if (status === 'pending') {
         where.status = { in: ['DRAFT', 'SENT'] };

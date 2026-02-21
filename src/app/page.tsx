@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { formatCurrency } from '@/lib/utils';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, isSuperAdmin } from '@/lib/auth';
 import {
   Users,
   Car,
@@ -20,7 +20,9 @@ export const dynamic = 'force-dynamic';
 
 async function getDashboardData() {
   const session = requireAuth();
-  const companyId = session.companyId;
+  const superAdmin = isSuperAdmin(session.role);
+  // Super admin sees all companies; regular users see only theirs
+  const companyFilter = superAdmin ? {} : { companyId: session.companyId };
 
   const [
     customerCount,
@@ -30,28 +32,29 @@ async function getDashboardData() {
     recentEstimates,
     activeWorkOrders,
   ] = await Promise.all([
-    prisma.customer.count({ where: { companyId } }),
-    prisma.vehicle.count({ where: { companyId } }),
+    prisma.customer.count({ where: companyFilter }),
+    prisma.vehicle.count({ where: companyFilter }),
     prisma.estimate.findMany({
-      where: { companyId },
+      where: companyFilter,
       select: { status: true, total: true },
     }),
     prisma.workOrder.findMany({
-      where: { companyId },
+      where: companyFilter,
       select: { status: true },
     }),
     prisma.estimate.findMany({
-      where: { companyId },
+      where: companyFilter,
       take: 5,
       orderBy: { createdAt: 'desc' },
       include: {
         customer: { select: { firstName: true, lastName: true } },
         vehicle: { select: { year: true, make: true, model: true } },
+        ...(superAdmin ? { company: { select: { name: true } } } : {}),
       },
     }),
     prisma.workOrder.findMany({
       where: {
-        companyId,
+        ...companyFilter,
         status: { in: ['PENDING', 'IN_PROGRESS', 'WAITING_PARTS'] },
       },
       orderBy: { createdAt: 'desc' },

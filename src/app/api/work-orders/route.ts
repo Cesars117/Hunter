@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getCompanyId } from '@/lib/api-auth';
+import { getCompanyId, getCompanyFilter } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
 // GET /api/work-orders
 export async function GET(request: NextRequest) {
   try {
-    const companyId = getCompanyId(request);
+    const companyFilter = getCompanyFilter(request);
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
 
-    const where: any = { companyId };
+    const where: any = companyFilter ? { companyId: companyFilter } : {};
     if (status) {
       if (status === 'active') {
         where.status = { in: ['PENDING', 'IN_PROGRESS', 'WAITING_PARTS', 'ON_HOLD'] };

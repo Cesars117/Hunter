@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateWorkOrderNumber } from '@/lib/utils';
 import { getCompanyId } from '@/lib/api-auth';
+import { isSuperAdmin } from '@/lib/auth';
+
+function getOwnerFilter(request: NextRequest, id: string) {
+  const role = request.headers.get('x-user-role') || '';
+  const where: any = { id };
+  if (!isSuperAdmin(role)) {
+    where.companyId = getCompanyId(request);
+  }
+  return where;
+}
 
 // GET /api/estimates/[id]
 export async function GET(
@@ -9,9 +19,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const companyId = getCompanyId(request);
     const estimate = await prisma.estimate.findFirst({
-      where: { id: params.id, companyId },
+      where: getOwnerFilter(request, params.id),
       include: {
         customer: true,
         vehicle: true,
@@ -52,7 +61,7 @@ export async function PUT(
 
     // Verify ownership
     const existing = await prisma.estimate.findFirst({
-      where: { id: params.id, companyId },
+      where: getOwnerFilter(request, params.id),
     });
     if (!existing) {
       return NextResponse.json({ error: 'Estimado no encontrado' }, { status: 404 });
@@ -160,9 +169,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const companyId = getCompanyId(request);
     const existing = await prisma.estimate.findFirst({
-      where: { id: params.id, companyId },
+      where: getOwnerFilter(request, params.id),
     });
     if (!existing) {
       return NextResponse.json({ error: 'Estimado no encontrado' }, { status: 404 });

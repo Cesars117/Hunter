@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getCompanyId } from '@/lib/api-auth';
+import { getCompanyId, getCompanyFilter } from '@/lib/api-auth';
 
 // GET /api/vehicles
 export async function GET(request: NextRequest) {
   try {
-    const companyId = getCompanyId(request);
+    const companyFilter = getCompanyFilter(request);
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const customerId = searchParams.get('customerId');
 
-    const where: any = { companyId };
+    const where: any = companyFilter ? { companyId: companyFilter } : {};
     if (customerId) where.customerId = customerId;
     if (search) {
       where.OR = [

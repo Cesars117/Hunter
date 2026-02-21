@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getCompanyId } from '@/lib/api-auth';
+import { getCompanyId, getCompanyFilter } from '@/lib/api-auth';
+import { isSuperAdmin } from '@/lib/auth';
 
 // GET /api/customers/[id]
 export async function GET(
@@ -8,9 +9,13 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const companyId = getCompanyId(request);
+    const role = request.headers.get('x-user-role') || '';
+    const whereClause: any = { id: params.id };
+    if (!isSuperAdmin(role)) {
+      whereClause.companyId = getCompanyId(request);
+    }
     const customer = await prisma.customer.findFirst({
-      where: { id: params.id, companyId },
+      where: whereClause,
       include: {
         vehicles: {
           orderBy: { createdAt: 'desc' },
@@ -47,12 +52,16 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const companyId = getCompanyId(request);
+    const role = request.headers.get('x-user-role') || '';
+    const whereClause: any = { id: params.id };
+    if (!isSuperAdmin(role)) {
+      whereClause.companyId = getCompanyId(request);
+    }
     const body = await request.json();
 
     // Verify ownership
     const existing = await prisma.customer.findFirst({
-      where: { id: params.id, companyId },
+      where: whereClause,
     });
     if (!existing) {
       return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 });
@@ -90,11 +99,15 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const companyId = getCompanyId(request);
+    const role = request.headers.get('x-user-role') || '';
+    const whereClause: any = { id: params.id };
+    if (!isSuperAdmin(role)) {
+      whereClause.companyId = getCompanyId(request);
+    }
 
     // Verify ownership
     const existing = await prisma.customer.findFirst({
-      where: { id: params.id, companyId },
+      where: whereClause,
     });
     if (!existing) {
       return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 });

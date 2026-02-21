@@ -1,0 +1,5 @@
+PassengerEnabled on
+PassengerAppType node
+PassengerStartupFile app.js
+PassengerNodejs /opt/alt/alt-nodejs20/root/usr/bin/node
+PassengerAppRoot /home/u441730936/domains/cdsrsolutions.com/public_html/hunter

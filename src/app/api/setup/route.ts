@@ -36,7 +36,9 @@ export async function GET(request: Request) {
   <div class="info">
     <strong>Credenciales que se crearán:</strong><br>
     📧 admin@autofix.com / admin123 (AutoFix PR)<br>
-    📧 admin@rodriguez.com / admin123 (Taller Rodríguez)
+    📧 admin@rodriguez.com / admin123 (Taller Rodríguez)<br>
+    📧 admin@sacket.com / admin123 (Sacket Prestige)<br>
+    🔑 admin@cdsrsolutions.com / admin123 (SUPER ADMIN)
   </div>
   <div class="warn">
     ⚠️ Solo ejecuta esto una vez. Si ya tienes datos, no los sobrescribirá (usa upsert).
@@ -136,6 +138,29 @@ export async function GET(request: Request) {
     });
     log(`  ✅ Empresas: ${company1.name}, ${company2.name}`);
 
+    // Sacket Prestige
+    const company3 = await prisma.company.upsert({
+      where: { id: 'comp-003' },
+      update: {},
+      create: {
+        id: 'comp-003',
+        name: 'Sacket Prestige',
+        slug: 'sacket-prestige',
+      },
+    });
+
+    // CDS Solutions (system)
+    const companySys = await prisma.company.upsert({
+      where: { id: 'comp-system' },
+      update: {},
+      create: {
+        id: 'comp-system',
+        name: 'CDS Solutions',
+        slug: 'cds-solutions',
+      },
+    });
+    log(`  ✅ + Sacket Prestige, CDS Solutions`);
+
     // Users
     log('  👤 Creando usuarios...');
     const hashedPassword = await bcrypt.hash('admin123', 12);
@@ -165,7 +190,35 @@ export async function GET(request: Request) {
         role: 'ADMIN',
       },
     });
-    log('  ✅ Usuarios creados');
+
+    // Sacket admin
+    await prisma.user.upsert({
+      where: { id: 'user-003' },
+      update: {},
+      create: {
+        id: 'user-003',
+        companyId: company3.id,
+        email: 'admin@sacket.com',
+        password: hashedPassword,
+        name: 'Sacket Admin',
+        role: 'ADMIN',
+      },
+    });
+
+    // SUPER ADMIN
+    await prisma.user.upsert({
+      where: { id: 'user-super' },
+      update: {},
+      create: {
+        id: 'user-super',
+        companyId: companySys.id,
+        email: 'admin@cdsrsolutions.com',
+        password: hashedPassword,
+        name: 'Super Admin',
+        role: 'SUPER_ADMIN',
+      },
+    });
+    log('  ✅ Usuarios creados (incluye Sacket + Super Admin)');
 
     // Shop Settings
     log('  ⚙️ Creando configuración...');
@@ -202,6 +255,33 @@ export async function GET(request: Request) {
         laborRate: 75.0,
       },
     });
+
+    await prisma.shopSettings.upsert({
+      where: { companyId: company3.id },
+      update: {},
+      create: {
+        companyId: company3.id,
+        shopName: 'Sacket Prestige',
+        address: '100 Prestige Blvd',
+        city: 'San Juan',
+        state: 'PR',
+        zipCode: '00907',
+        phone: '(787) 555-0300',
+        email: 'info@sacket.com',
+        taxRate: 11.5,
+        laborRate: 95.0,
+      },
+    });
+
+    await prisma.shopSettings.upsert({
+      where: { companyId: companySys.id },
+      update: {},
+      create: {
+        companyId: companySys.id,
+        shopName: 'CDS Solutions',
+        email: 'admin@cdsrsolutions.com',
+      },
+    });
     log('  ✅ Configuración creada');
 
     // Final counts
@@ -219,6 +299,8 @@ export async function GET(request: Request) {
     log('📧 Credenciales:');
     log('   admin@autofix.com / admin123');
     log('   admin@rodriguez.com / admin123');
+    log('   admin@sacket.com / admin123');
+    log('   🔑 admin@cdsrsolutions.com / admin123 (SUPER_ADMIN)');
 
     await prisma.$disconnect();
 
@@ -229,6 +311,8 @@ export async function GET(request: Request) {
       credentials: [
         { email: 'admin@autofix.com', password: 'admin123', company: 'AutoFix PR' },
         { email: 'admin@rodriguez.com', password: 'admin123', company: 'Taller Rodríguez' },
+        { email: 'admin@sacket.com', password: 'admin123', company: 'Sacket Prestige' },
+        { email: 'admin@cdsrsolutions.com', password: 'admin123', company: 'CDS Solutions', role: 'SUPER_ADMIN' },
       ],
       logs,
     });
