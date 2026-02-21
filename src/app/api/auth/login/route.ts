@@ -65,19 +65,24 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Detect if request is over HTTPS (works behind proxies too)
+    const isHttps = request.headers.get('x-forwarded-proto') === 'https' ||
+                    request.url.startsWith('https://');
+
     response.cookies.set(TOKEN_NAME, token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isHttps,
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: '/',
     });
 
     return response;
-  } catch (error) {
-    console.error('Login error:', error);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Login error:', message);
     return NextResponse.json(
-      { error: 'Error al iniciar sesión' },
+      { error: 'Error al iniciar sesión', detail: message },
       { status: 500 }
     );
   }
