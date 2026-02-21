@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Wrench, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -43,26 +42,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-600 to-slate-800">
-      <div className="w-full max-w-md px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="relative mx-auto mb-6 w-64 h-40 overflow-hidden rounded-2xl">
-            <Image
-              src="/logo.png"
-              alt="Hunter"
-              fill
-              className="object-cover object-center scale-110"
-              priority
-            />
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-600 mb-4">
+            <Wrench className="h-8 w-8 text-white" />
           </div>
-          <p className="mt-1 text-sm text-slate-300">
+          <h1 className="text-3xl font-bold text-gray-900">Hunter</h1>
+          <p className="mt-1 text-sm text-gray-500">
             Sistema de Gestión de Taller Mecánico
           </p>
         </div>
 
         {/* Login Form */}
-        <div className="card p-8 bg-white/95 backdrop-blur shadow-2xl">
+        <div className="card p-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">
             Iniciar Sesión
           </h2>
@@ -143,18 +137,9 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-2">
-          <Image
-            src="/logo.png"
-            alt="Hunter"
-            width={28}
-            height={28}
-            className="object-cover rounded opacity-60"
-          />
-          <p className="text-xs text-slate-400">
-            Hunter v1.0 — CDSRSolutions.com
-          </p>
-        </div>
+        <p className="mt-6 text-center text-xs text-gray-400">
+          Hunter v1.0 — CDSRSolutions.com
+        </p>
       </div>
     </div>
   );
