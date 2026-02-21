@@ -1,191 +1,105 @@
-# 🏗️ Guía de Despliegue — Hunter en Hostinger
+# Hunter - Despliegue en Hostinger
 ## Subdominio: hunter.cdsrsolutions.com
 
 ---
 
-## Paso 1: Crear el Subdominio en Hostinger
+## LO QUE YA ESTA LISTO (Automatico)
 
-1. Entra a **hPanel** → https://hpanel.hostinger.com
-2. Ve a **Dominios** → **Subdominios**
-3. Crea: `hunter.cdsrsolutions.com`
-4. Anota la **carpeta raíz** que se asigna (ej: `public_html/hunter`)
+- [x] Build de produccion (standalone)
+- [x] Script de instalacion automatica (`setup.sh`)
+- [x] Paquete de deploy (`hunter-deploy.zip` - 12.9 MB)
+- [x] Configuracion de .htaccess
+- [x] GitHub actualizado
 
 ---
 
-## Paso 2: Configurar Node.js en hPanel
+## LO QUE TIENES QUE HACER TU (Manual - 5 pasos)
 
-1. En hPanel → **Avanzado** → **Node.js** (o busca "Node.js")
-2. Clic en **"Crear nueva aplicación"**
+### Paso 1: Crear Subdominio (2 min)
+1. Entra a **hPanel**: https://hpanel.hostinger.com
+2. Selecciona tu plan con el dominio `cdsrsolutions.com`
+3. Ve a **Dominios** -> **Subdominios**
+4. Escribe `hunter` y crea el subdominio
+5. **Anota la carpeta** que te asigna (ej: `public_html/hunter` o `domains/hunter.cdsrsolutions.com/public_html`)
+
+### Paso 2: Configurar Node.js App (3 min)
+1. En hPanel -> **Avanzado** -> **Node.js**
+2. Clic en **"Crear nueva aplicacion"**
 3. Configura:
-   - **Versión de Node.js**: `18.x` o superior
-   - **Carpeta raíz de la aplicación**: `hunter` (o la carpeta donde subirás los archivos)
-   - **Archivo de inicio**: `server.js`
-   - **Puerto**: Se asigna automáticamente
-4. **Variables de entorno** (agregar estas):
-   ```
-   NODE_ENV = production
-   DATABASE_URL = file:./prisma/prod.db
-   JWT_SECRET = (genera uno seguro, ej: openssl rand -base64 32)
-   ```
-5. Guarda la configuración
+   | Campo | Valor |
+   |-------|-------|
+   | **Version Node.js** | `18.x` o superior |
+   | **Carpeta raiz** | La carpeta del paso 1 (ej: `hunter`) |
+   | **Archivo de inicio** | `server.js` |
+4. **NO inicies la app todavia**
 
----
+### Paso 3: Subir Archivos (5 min)
 
-## Paso 3: Subir los Archivos
-
-### Opción A: Usando el File Manager de hPanel
-
-1. Primero, en tu PC, ejecuta este comando para crear el paquete de deploy:
-
-   ```powershell
-   cd c:\QuikStop
-   
-   # Crear carpeta de deploy
-   mkdir deploy-hunter
-   
-   # Copiar standalone (incluye server.js, node_modules optimizados, .next)
-   Copy-Item -Recurse .next\standalone\* deploy-hunter\
-   
-   # Copiar archivos estáticos de Next.js
-   Copy-Item -Recurse .next\static deploy-hunter\.next\static
-   
-   # Copiar public (si existe)
-   if (Test-Path public) { Copy-Item -Recurse public deploy-hunter\public }
-   
-   # Copiar Prisma schema (necesario para generar DB en producción)
-   mkdir deploy-hunter\prisma
-   Copy-Item prisma\schema.prisma deploy-hunter\prisma\
-   Copy-Item prisma\seed.ts deploy-hunter\prisma\
-   
-   # Crear .env de producción
-   Copy-Item .env.production deploy-hunter\.env
-   
-   # Comprimir
-   Compress-Archive -Path deploy-hunter\* -DestinationPath hunter-deploy.zip -Force
-   ```
-
-2. En hPanel → **Archivos** → **Administrador de archivos**
-3. Navega a la carpeta del subdominio (ej: `public_html/hunter` o la ruta asignada)
-4. Sube el archivo `hunter-deploy.zip`
-5. Extrae el ZIP en esa carpeta
-
-### Opción B: Usando SSH (más rápido)
-
+#### Opcion A — Por SSH (recomendada, mas rapida):
 ```bash
-# Conectar por SSH (datos en hPanel → Acceso SSH)
-ssh u123456789@hunter.cdsrsolutions.com -p 65002
+# 1. Conectar por SSH (datos de acceso en hPanel -> Acceso SSH)
+ssh tu-usuario@tu-servidor.hostinger.com -p 65002
 
-# Ir a la carpeta
-cd ~/hunter
+# 2. Ir a la carpeta del subdominio
+cd ~/domains/hunter.cdsrsolutions.com/public_html
+# O la ruta que mostro el paso 1
 
-# Clonar desde GitHub
+# 3. Clonar el repo
 git clone https://github.com/Cesars117/Hunter.git .
 
-# Instalar dependencias
-npm install --production
-
-# Generar Prisma client
-npx prisma generate
-
-# Crear base de datos
-npx prisma db push
-
-# Crear datos iniciales
-npx prisma db seed
-
-# Build
-npm run build
-
-# Copiar standalone
-cp -r .next/standalone/* .
-cp -r .next/static .next/static
+# 4. EJECUTAR SCRIPT AUTOMATICO (hace todo: instala, compila, crea DB)
+bash setup.sh
 ```
+**Listo!** El script hace TODO automaticamente.
 
----
+#### Opcion B — Por File Manager (si no tienes SSH):
+1. En hPanel -> **Archivos** -> **Administrador de archivos**
+2. Navega a la carpeta del subdominio
+3. Sube `hunter-deploy.zip` (esta en `c:\QuikStop\hunter-deploy.zip`)
+4. Haz clic derecho en el ZIP -> **Extraer**
+5. Abre la **Terminal** de hPanel (o SSH) y ejecuta:
+   ```bash
+   cd ~/domains/hunter.cdsrsolutions.com/public_html
+   bash setup.sh
+   ```
 
-## Paso 4: Inicializar la Base de Datos
+### Paso 4: SSL (1 min)
+1. En hPanel -> **Seguridad** -> **SSL**
+2. Instala certificado SSL para `hunter.cdsrsolutions.com`
+3. Hostinger ofrece **Let's Encrypt gratis**
 
-Si subiste los archivos por File Manager, necesitas ejecutar esto por SSH o por la terminal de Node.js en hPanel:
-
-```bash
-# En la carpeta de la app
-npx prisma generate
-npx prisma db push
-npx prisma db seed
-```
-
-Esto creará la base de datos SQLite y los usuarios de prueba.
-
----
-
-## Paso 5: Verificar el DNS
-
-1. En hPanel → **Dominios** → **DNS / Nameservers**
-2. Verifica que el subdominio `hunter` tenga un registro **A** o **CNAME** apuntando al servidor
-3. Normalmente Hostinger lo configura automáticamente al crear el subdominio
-
----
-
-## Paso 6: Activar SSL (HTTPS)
-
-1. En hPanel → **Seguridad** → **SSL**
-2. Instala SSL para `hunter.cdsrsolutions.com`
-3. Hostinger ofrece SSL gratuito con Let's Encrypt
-
----
-
-## Paso 7: Iniciar la Aplicación
-
-1. En hPanel → **Node.js** → tu aplicación
-2. Clic en **"Reiniciar"** o **"Iniciar"**
-3. Visita: https://hunter.cdsrsolutions.com
+### Paso 5: Iniciar App (30 seg)
+1. En hPanel -> **Avanzado** -> **Node.js**
+2. Clic **"Reiniciar"** en tu aplicacion
+3. Espera 30 segundos
+4. Abre: **https://hunter.cdsrsolutions.com**
 
 ---
 
 ## Credenciales de Prueba
 
-| Empresa | Email | Contraseña |
+| Empresa | Email | Contrasena |
 |---------|-------|-----------|
-| AutoFix PR | admin@autofix.com | admin123 |
-| Taller Rodríguez | admin@rodriguez.com | admin123 |
+| AutoFix PR | `admin@autofix.com` | `admin123` |
+| Taller Rodriguez | `admin@rodriguez.com` | `admin123` |
 
 ---
 
-## Estructura de Archivos en el Servidor
+## Si algo no funciona
 
-```
-hunter/                    ← Carpeta raíz de la app
-├── server.js              ← Archivo de inicio (Hostinger lo ejecuta)
-├── .env                   ← Variables de entorno
-├── .next/                 ← Build de Next.js
-│   ├── server/
-│   └── static/
-├── node_modules/          ← Dependencias (las del standalone son mínimas)
-├── prisma/
-│   ├── schema.prisma
-│   └── prod.db            ← Base de datos SQLite (se crea con db push)
-├── package.json
-└── public/                ← Archivos estáticos (favicon, etc.)
-```
+| Problema | Solucion |
+|----------|----------|
+| App no inicia | hPanel -> Node.js -> ver **Logs** |
+| Error 503/502 | Espera 1 min, la app tarda en arrancar |
+| Error de DB | SSH -> `cd carpeta-app` -> `npx prisma db push` |
+| Pagina en blanco | Verifica que `server.js` sea el archivo de inicio |
+| SSL no funciona | Espera 15 min, Let's Encrypt tarda en propagarse |
 
 ---
 
-## Troubleshooting
+## Notas Importantes
 
-### La app no inicia
-- Revisa los **logs** en hPanel → Node.js → Logs
-- Verifica que las variables de entorno estén correctas
-- Asegúrate de que `server.js` sea el archivo de inicio
-
-### Error de base de datos
-- Verifica que `DATABASE_URL` apunte a `file:./prisma/prod.db`
-- Ejecuta `npx prisma db push` para recrear la DB
-
-### Error 503 / 502
-- La app puede tardar unos segundos en iniciar
-- Revisá el puerto asignado por Hostinger vs el que usa la app
-
-### Cambiar contraseña del JWT_SECRET
-- Genera uno seguro: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
-- Actualiza la variable en hPanel
-- Reinicia la app
+- **Base de datos**: SQLite (se guarda en `prisma/prod.db` dentro de tu servidor)
+- **Backups**: Descarga periodicamente el archivo `prisma/prod.db`
+- **Actualizar**: SSH -> `cd carpeta-app` -> `git pull` -> `bash setup.sh`
+- **JWT_SECRET**: El script `setup.sh` genera uno automaticamente
