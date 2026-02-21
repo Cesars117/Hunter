@@ -1,9 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Ready for subdomain deployment on cdsrsolutions.com
-  // Set basePath if needed: basePath: '/taller',
+  output: 'standalone',
   images: {
-    domains: ['cdsrsolutions.com'],
+    domains: ['cdsrsolutions.com', 'hunter.cdsrsolutions.com'],
   },
 };
 
