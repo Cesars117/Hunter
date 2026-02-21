@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const TOKEN_NAME = 'hunter-token';
 
 // Public paths that don't require authentication
-const publicPaths = ['/login', '/api/auth/login', '/api/auth/logout', '/api/health'];
+const publicPaths = ['/login', '/api/auth/login', '/api/auth/logout', '/api/health', '/api/setup'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
