@@ -10,6 +10,7 @@ import {
   FileText,
   Wrench,
   Settings,
+  ClipboardList,
   TrendingUp,
   Building2,
 } from 'lucide-react';
@@ -49,8 +50,8 @@ export default function Sidebar() {
     <aside className="no-print flex w-64 flex-col border-r border-gray-200 bg-white">
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 border-b border-gray-100 px-6">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600">
-          <Wrench className="h-6 w-6 text-white" />
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600">
+          <Wrench className="h-5 w-5 text-white" />
         </div>
         <div>
           <h1 className="text-lg font-bold text-gray-900">Hunter</h1>
@@ -86,8 +87,8 @@ export default function Sidebar() {
       {/* Footer */}
       <div className="border-t border-gray-100 px-4 py-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100">
-            <Wrench className="h-4 w-4 text-gray-500" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-brand-600">
+            <ClipboardList className="h-4 w-4" />
           </div>
           <div>
             <p className="text-xs font-medium text-gray-700">Hunter v1.0</p>
