@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Wrench } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -47,15 +46,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md px-4">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="relative mx-auto mb-6 w-64 h-40 overflow-hidden rounded-2xl">
-            <Image
-              src="/logo.png"
-              alt="Hunter"
-              fill
-              className="object-cover object-center scale-110"
-              priority
-            />
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-600 shadow-lg">
+            <Wrench className="h-10 w-10 text-white" />
           </div>
+          <h1 className="text-3xl font-bold text-white">Hunter</h1>
           <p className="mt-1 text-sm text-slate-300">
             Sistema de Gestión de Taller Mecánico
           </p>
@@ -143,14 +137,7 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-2">
-          <Image
-            src="/logo.png"
-            alt="Hunter"
-            width={28}
-            height={28}
-            className="object-cover rounded opacity-60"
-          />
+        <div className="mt-6 text-center">
           <p className="text-xs text-slate-400">
             Hunter v1.0 — CDSRSolutions.com
           </p>
